@@ -114,3 +114,8 @@ loadMoreBtn.addEventListener('click', async () => {
     });
   }
 });
+document.addEventListener('click', () => {
+  if (document.activeElement === input) {
+    input.blur(); // снимает фокус после клика по любому месту
+  }
+});
