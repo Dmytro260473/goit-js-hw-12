@@ -22,11 +22,15 @@ let page = 1;
 const perPage = 15;
 let totalHits = 0;
 
-// Ініціалізація SimpleLightbox
+
 const lightbox = new SimpleLightbox('.gallery a', {
   captionsData: 'alt',
   captionDelay: 250,
 });
+lightbox.on('closed.simplelightbox', () => {
+  form.elements['search-text'].focus();
+});
+
 
 form.addEventListener('submit', async function (event) {
   event.preventDefault();
