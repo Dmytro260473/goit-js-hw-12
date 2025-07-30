@@ -15,28 +15,24 @@ import {
 } from './js/render-functions';
 
 const form = document.querySelector('.form');
+const input = document.querySelector('input[name="search-text"]');
 const loadMoreBtn = document.querySelector('.load-more');
-const input = form.querySelector('input[name="search-text"]');
 
 let query = '';
 let page = 1;
 const perPage = 15;
 let totalHits = 0;
-let lightbox = null;
-
-// Удаляем фокус с input при закрытии модального окна (фикс бага)
-document.addEventListener('click', event => {
-  if (event.target.classList.contains('sl-close') || event.target.classList.contains('sl-overlay')) {
-    input.blur();
-  }
+let lightbox = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 250,
 });
 
-form.addEventListener('submit', async function (event) {
+form.addEventListener('submit', async event => {
   event.preventDefault();
 
   query = input.value.trim();
   if (!query) {
-    iziToast.info({
+    iziToast.warning({
       message: 'Please enter a search term.',
       position: 'topRight',
     });
@@ -53,8 +49,8 @@ form.addEventListener('submit', async function (event) {
     hideLoader();
 
     if (hits.length === 0) {
-      iziToast.warning({
-        message: 'Sorry, there are no images matching your search query. Please try again!',
+      iziToast.error({
+        message: 'No images found. Try again.',
         position: 'topRight',
       });
       return;
@@ -62,22 +58,21 @@ form.addEventListener('submit', async function (event) {
 
     totalHits = total;
     createGallery(hits);
-    initLightbox(); // пересоздание lightbox
+    lightbox.refresh();
 
     const totalPages = Math.ceil(totalHits / perPage);
     if (totalPages > 1) {
       showLoadMoreButton();
     } else {
-      hideLoadMoreButton();
       iziToast.info({
-        message: 'The end of search results.',
+        message: 'End of results.',
         position: 'topRight',
       });
     }
   } catch (error) {
     hideLoader();
     iziToast.error({
-      message: 'An error occurred while fetching data. Please try again.',
+      message: 'Error fetching images.',
       position: 'topRight',
     });
   }
@@ -90,14 +85,15 @@ loadMoreBtn.addEventListener('click', async () => {
   try {
     const { hits } = await getImagesByQuery(query, page);
     hideLoader();
+
     createGallery(hits);
-    initLightbox(); // пересоздание lightbox
+    lightbox.refresh();
 
     const totalPages = Math.ceil(totalHits / perPage);
     if (page >= totalPages) {
       hideLoadMoreButton();
       iziToast.info({
-        message: "We're sorry, but you've reached the end of search results.",
+        message: 'No more results.',
         position: 'topRight',
       });
     }
@@ -113,20 +109,8 @@ loadMoreBtn.addEventListener('click', async () => {
   } catch (error) {
     hideLoader();
     iziToast.error({
-      message: 'An error occurred while fetching more data.',
+      message: 'Error loading more images.',
       position: 'topRight',
     });
   }
 });
-
-function initLightbox() {
-  if (lightbox) {
-    lightbox.destroy();
-  }
-  lightbox = new SimpleLightbox('.gallery a', {
-    captionsData: 'alt',
-    captionDelay: 250,
-    nav: true,
-    loop: false,
-  });
-}
