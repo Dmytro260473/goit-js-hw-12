@@ -16,26 +16,25 @@ import {
 
 const form = document.querySelector('.form');
 const loadMoreBtn = document.querySelector('.load-more');
+const input = form.querySelector('input[name="search-text"]');
 
 let query = '';
 let page = 1;
 const perPage = 15;
 let totalHits = 0;
+let lightbox = null;
 
-
-const lightbox = new SimpleLightbox('.gallery a', {
-  captionsData: 'alt',
-  captionDelay: 250,
+// Удаляем фокус с input при закрытии модального окна (фикс бага)
+document.addEventListener('click', event => {
+  if (event.target.classList.contains('sl-close') || event.target.classList.contains('sl-overlay')) {
+    input.blur();
+  }
 });
-lightbox.on('closed.simplelightbox', () => {
-  form.elements['search-text'].focus();
-});
-
 
 form.addEventListener('submit', async function (event) {
   event.preventDefault();
 
-  query = form.elements['search-text'].value.trim();
+  query = input.value.trim();
   if (!query) {
     iziToast.info({
       message: 'Please enter a search term.',
@@ -63,7 +62,7 @@ form.addEventListener('submit', async function (event) {
 
     totalHits = total;
     createGallery(hits);
-    lightbox.refresh(); // <--- оновлення після додавання карток
+    initLightbox(); // пересоздание lightbox
 
     const totalPages = Math.ceil(totalHits / perPage);
     if (totalPages > 1) {
@@ -92,7 +91,7 @@ loadMoreBtn.addEventListener('click', async () => {
     const { hits } = await getImagesByQuery(query, page);
     hideLoader();
     createGallery(hits);
-    lightbox.refresh(); // <--- оновлення після додавання нових карток
+    initLightbox(); // пересоздание lightbox
 
     const totalPages = Math.ceil(totalHits / perPage);
     if (page >= totalPages) {
@@ -119,3 +118,15 @@ loadMoreBtn.addEventListener('click', async () => {
     });
   }
 });
+
+function initLightbox() {
+  if (lightbox) {
+    lightbox.destroy();
+  }
+  lightbox = new SimpleLightbox('.gallery a', {
+    captionsData: 'alt',
+    captionDelay: 250,
+    nav: true,
+    loop: false,
+  });
+}
