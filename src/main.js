@@ -1,9 +1,6 @@
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 
-import SimpleLightbox from 'simplelightbox';
-import 'simplelightbox/dist/simple-lightbox.min.css';
-
 import { getImagesByQuery } from './js/pixabay-api';
 import {
   createGallery,
@@ -21,11 +18,6 @@ let query = '';
 let page = 1;
 const perPage = 15;
 let totalHits = 0;
-
-const lightbox = new SimpleLightbox('.gallery a', {
-  captionsData: 'alt',
-  captionDelay: 250,
-});
 
 form.addEventListener('submit', async function (event) {
   event.preventDefault();
@@ -57,8 +49,7 @@ form.addEventListener('submit', async function (event) {
     }
 
     totalHits = total;
-    createGallery(hits); // додаємо картинки в галерею
-    lightbox.refresh();
+    createGallery(hits);
 
     const totalPages = Math.ceil(totalHits / perPage);
     if (totalPages > 1) {
@@ -86,8 +77,7 @@ loadMoreBtn.addEventListener('click', async () => {
   try {
     const { hits } = await getImagesByQuery(query, page);
     hideLoader();
-    createGallery(hits); // додаємо нові картинки
-    lightbox.refresh();
+    createGallery(hits);
 
     const totalPages = Math.ceil(totalHits / perPage);
     if (page >= totalPages) {
